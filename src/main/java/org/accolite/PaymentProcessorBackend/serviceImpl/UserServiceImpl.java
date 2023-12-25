@@ -143,21 +143,20 @@ public class UserServiceImpl implements UserService {
         Wallet userWallet = user.getWallet();
 
         if(userWallet.getPayment_codes().contains(code)) {
-            Transaction transaction = new Transaction();
-            transaction.setUserId(userId);
-            transaction.setVendorId(vendorId);
-            transaction.setDate(new Date(System.currentTimeMillis()));
-            transaction.setPaymentMode(PaymentMode.OFFLINE);
-            transaction.setAmount(BigDecimal.valueOf(amount));
-
-            userWallet.setBalance(userWallet.getBalance().subtract(BigDecimal.valueOf(amount)));
-            walletRepository.save(userWallet);
-
             if(isWithin20KMRadius(latitude, longitude, vendor.getLatitude(), vendor.getLongitude())) {
+                Transaction transaction = new Transaction();
+                transaction.setUserId(userId);
+                transaction.setVendorId(vendorId);
+                transaction.setDate(new Date(System.currentTimeMillis()));
+                transaction.setPaymentMode(PaymentMode.OFFLINE);
                 transaction.setStatus(TransactionStatus.APPROVED);
+                transaction.setAmount(BigDecimal.valueOf(amount));
+
+                userWallet.setOfflineBalance(userWallet.getOfflineBalance().subtract(BigDecimal.valueOf(amount)));
+                walletRepository.save(userWallet);
 
                 Wallet vendorWallet = vendor.getStore_wallet();
-                vendorWallet.setBalance(vendorWallet.getBalance().add(BigDecimal.valueOf(amount)));
+                vendorWallet.setOfflineBalance(vendorWallet.getOfflineBalance().add(BigDecimal.valueOf(amount)));
                 walletRepository.save(vendorWallet);
 
                 try {
@@ -166,9 +165,18 @@ public class UserServiceImpl implements UserService {
                     System.out.println("Concurrent modification detected");
                     e.printStackTrace();
                 }
-                return ResponseEntity.ok("Transaction successfull");
+                return ResponseEntity.ok("Offline transaction successful");
             } else {
+                Transaction transaction = new Transaction();
+                transaction.setUserId(userId);
+                transaction.setVendorId(vendorId);
+                transaction.setDate(new Date(System.currentTimeMillis()));
+                transaction.setPaymentMode(PaymentMode.OFFLINE);
                 transaction.setStatus(TransactionStatus.FLAGGED);
+                transaction.setAmount(BigDecimal.valueOf(amount));
+
+                userWallet.setOfflineBalance(userWallet.getOfflineBalance().subtract(BigDecimal.valueOf(amount)));
+                walletRepository.save(userWallet);
 
                 try {
                     transactionRepository.save(transaction);
@@ -176,7 +184,7 @@ public class UserServiceImpl implements UserService {
                     System.out.println("Concurrent modification detected");
                     e.printStackTrace();
                 }
-                return ResponseEntity.ok("Transaction flagged");
+                return ResponseEntity.ok("Offline transaction flagged");
             }
         } else {
             return ResponseEntity.badRequest().body("The given code does not match any of the offline codes generated for this userId");

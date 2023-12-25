@@ -1,8 +1,6 @@
 package org.accolite.PaymentProcessorBackend.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,10 +17,13 @@ import java.util.Date;
 @Entity
 public class Transaction {
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     Long transactionId;
     BigDecimal amount;
 
+    @Enumerated(EnumType.STRING)
     PaymentMode paymentMode;
+    @Enumerated(EnumType.STRING)
     TransactionStatus status;
     Date date;
     int userId;

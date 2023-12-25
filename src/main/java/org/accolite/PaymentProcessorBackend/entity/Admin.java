@@ -17,7 +17,7 @@ public class Admin {
     @GeneratedValue(strategy = GenerationType.AUTO)
     int adminId;
     String username;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "company_walletId", referencedColumnName = "walletId")
-    Wallet company_wallet;
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "company_walletId", referencedColumnName = "walletId")
+//    Wallet company_wallet;
 }

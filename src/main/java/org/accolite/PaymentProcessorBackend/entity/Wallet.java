@@ -15,6 +15,7 @@ import java.util.Set;
 @Entity
 public class Wallet {
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     int walletId;
     BigDecimal offlineBalance;
     BigDecimal balance;

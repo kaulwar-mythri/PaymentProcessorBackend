@@ -26,7 +26,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public ResponseEntity<String> createAdmin(Admin admin) {
-        admin.setCompany_wallet(new Wallet());
+//        admin.setCompany_wallet(new Wallet());
         adminRepository.save(admin);
         return ResponseEntity.ok("Admin created");
     }
@@ -46,6 +46,7 @@ public class AdminServiceImpl implements AdminService {
                 wallet = new Wallet();
                 wallet.setBalance(BigDecimal.ZERO);
                 wallet.setOfflineBalance(BigDecimal.ZERO);
+                walletRepository.save(wallet);
                 user.setWallet(wallet);
             }
             userRepository.save(user);
@@ -65,22 +66,23 @@ public class AdminServiceImpl implements AdminService {
             Vendor vendor = vendorRepository.findById(transaction.getVendorId()).orElseThrow(() -> new RuntimeException("Vendor with the given id not found error"));
 
             Wallet vendorWallet = vendor.getStore_wallet();
-            vendorWallet.setBalance(vendorWallet.getBalance().add(transaction.getAmount()));
+            vendorWallet.setOfflineBalance(vendorWallet.getOfflineBalance().add(transaction.getAmount()));
             walletRepository.save(vendorWallet);
 
             transaction.setStatus(TransactionStatus.APPROVED);
             transactionRepository.save(transaction);
+            return ResponseEntity.ok("Offline Transaction approved by admin");
         } else {
             User user = userRepository.findById(transaction.getUserId()).orElseThrow(() -> new RuntimeException("User with the given id not found error"));
 
             Wallet userWallet = user.getWallet();
-            userWallet.setBalance(userWallet.getBalance().add(transaction.getAmount()));
+            userWallet.setOfflineBalance(userWallet.getOfflineBalance().add(transaction.getAmount()));
             walletRepository.save(userWallet);
 
             transaction.setStatus(TransactionStatus.REJECTED);
             transactionRepository.save(transaction);
+            return ResponseEntity.ok("Offline Transaction rejected by admin");
         }
-        return ResponseEntity.ok("Transaction reviewed by admin");
     }
 
     @Override
@@ -100,6 +102,9 @@ public class AdminServiceImpl implements AdminService {
         if(wallet == null) {
             wallet = new Wallet();
             vendor.setStore_wallet(wallet);
+            wallet.setBalance(BigDecimal.ZERO);
+            wallet.setOfflineBalance(BigDecimal.ZERO);
+            walletRepository.save(wallet);
         }
         vendorRepository.save(vendor);
         return ResponseEntity.ok("Vendor approved by admin");

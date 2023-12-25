@@ -32,7 +32,7 @@ public class UserController {
         return userService.transferMoneyToOffline(userId, amount);
     }
 
-    @PostMapping("/get-offline-codes/{userId}")
+    @GetMapping("/get-offline-codes/{userId}")
     public ResponseEntity<Set<String>> getOfflineCodes(@PathVariable int userId) {
         return userService.getOfflineCodes(userId);
     }
